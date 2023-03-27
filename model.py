@@ -12,10 +12,9 @@ class MatchLSTM(nn.Module):
         use_cuda = config.yes_cuda > 0 and torch.cuda.is_available()
         self.device = torch.device("cuda" if use_cuda else "cpu")
 
-        print('word2vec shape', word2vec.shape)
+        print("word2vec shape", word2vec.shape)
         assert len(word2vec[0]) == config.embedding_dim
-        self.word_embed = nn.Embedding(len(word2vec), len(word2vec[0]),
-                                       padding_idx=0)
+        self.word_embed = nn.Embedding(len(word2vec), len(word2vec[0]), padding_idx=0)
         self.word_embed.weight.data.copy_(torch.from_numpy(word2vec))
         self.word_embed.weight.requires_grad = False
 
@@ -25,22 +24,25 @@ class MatchLSTM(nn.Module):
         self.w_e = nn.Parameter(torch.Tensor(config.hidden_size))
         nn.init.uniform_(self.w_e)
 
-        self.w_s = nn.Linear(in_features=config.hidden_size,
-                             out_features=config.hidden_size, bias=False)
-        self.w_t = nn.Linear(in_features=config.hidden_size,
-                             out_features=config.hidden_size, bias=False)
-        self.w_m = nn.Linear(in_features=config.hidden_size,
-                             out_features=config.hidden_size, bias=False)
-        self.fc = nn.Linear(in_features=config.hidden_size,
-                            out_features=config.num_classes)
+        self.w_s = nn.Linear(
+            in_features=config.hidden_size, out_features=config.hidden_size, bias=False
+        )
+        self.w_t = nn.Linear(
+            in_features=config.hidden_size, out_features=config.hidden_size, bias=False
+        )
+        self.w_m = nn.Linear(
+            in_features=config.hidden_size, out_features=config.hidden_size, bias=False
+        )
+        self.fc = nn.Linear(
+            in_features=config.hidden_size, out_features=config.num_classes
+        )
         self.init_linears()
 
         self.lstm_prem = nn.LSTM(config.embedding_dim, config.hidden_size)
         self.lstm_hypo = nn.LSTM(config.embedding_dim, config.hidden_size)
-        self.lstm_match = nn.LSTMCell(2 * config.hidden_size,
-                                      config.hidden_size)
+        self.lstm_match = nn.LSTMCell(2 * config.hidden_size, config.hidden_size)
 
-        if config.dropout_fc > 0.:
+        if config.dropout_fc > 0.0:
             self.dropout_fc = nn.Dropout(p=config.dropout_fc)
 
         self.req_grad_params = self.get_req_grad_params(debug=True)
@@ -60,10 +62,12 @@ class MatchLSTM(nn.Module):
         _, p_idx_unsort = torch.sort(p_idxes, dim=0, descending=False)
         premise = premise[:, p_idxes]
         # (max_len, batch_size) -> (max_len, batch_size, embed_dim)
-        if self.config.dropout_emb > 0. and self.training:
-            premise = F.dropout(self.word_embed(premise),
-                                p=self.config.dropout_emb,
-                                training=self.training)
+        if self.config.dropout_emb > 0.0 and self.training:
+            premise = F.dropout(
+                self.word_embed(premise),
+                p=self.config.dropout_emb,
+                training=self.training,
+            )
         else:
             premise = self.word_embed(premise)
         packed_premise = pack_padded_sequence(premise, premise_len)
@@ -79,10 +83,12 @@ class MatchLSTM(nn.Module):
         _, h_idx_unsort = torch.sort(h_idxes, dim=0, descending=False)
         hypothesis = hypothesis[:, h_idxes]
         # (max_len, batch_size) -> (max_len, batch_size, embed_dim)
-        if self.config.dropout_emb > 0. and self.training:
-            hypothesis = F.dropout(self.word_embed(hypothesis),
-                                   p=self.config.dropout_emb,
-                                   training=self.training)
+        if self.config.dropout_emb > 0.0 and self.training:
+            hypothesis = F.dropout(
+                self.word_embed(hypothesis),
+                p=self.config.dropout_emb,
+                training=self.training,
+            )
         else:
             hypothesis = self.word_embed(hypothesis)
         packed_hypothesis = pack_padded_sequence(hypothesis, hypothesis_len)
@@ -94,12 +100,9 @@ class MatchLSTM(nn.Module):
 
         # matchLSTM
         batch_size = premise.size(1)
-        h_m_k = torch.zeros((batch_size, self.config.hidden_size),
-                            device=self.device)
-        c_m_k = torch.zeros((batch_size, self.config.hidden_size),
-                            device=self.device)
-        h_last = torch.zeros((batch_size, self.config.hidden_size),
-                             device=self.device)
+        h_m_k = torch.zeros((batch_size, self.config.hidden_size), device=self.device)
+        c_m_k = torch.zeros((batch_size, self.config.hidden_size), device=self.device)
+        h_last = torch.zeros((batch_size, self.config.hidden_size), device=self.device)
 
         for k in range(hypothesis_max_len):
             h_t_k = h_t[k]
@@ -111,7 +114,8 @@ class MatchLSTM(nn.Module):
             for j in range(prem_max_len):
                 # tanh_stm: (batch_size, hidden_size)
                 tanh_s_t_m = torch.tanh(
-                    self.w_s(h_s[j]) + self.w_t(h_t_k) + self.w_m(h_m_k))
+                    self.w_s(h_s[j]) + self.w_t(h_t_k) + self.w_m(h_m_k)
+                )
 
                 # dot product
                 # https://github.com/pytorch/pytorch/issues/18027#issuecomment-473404765
@@ -123,8 +127,7 @@ class MatchLSTM(nn.Module):
 
             # Equation (2)
             # (batch_size, hidden_size)
-            a_k = torch.bmm(
-                torch.unsqueeze(alpha_kj.t(), 1), h_s.permute(1, 0, 2))
+            a_k = torch.bmm(torch.unsqueeze(alpha_kj.t(), 1), h_s.permute(1, 0, 2))
             a_k = torch.squeeze(a_k, dim=1)
 
             # Equation (7)
@@ -147,7 +150,7 @@ class MatchLSTM(nn.Module):
         return self.fc(h_last)
 
     def get_req_grad_params(self, debug=False):
-        print('#parameters: ', end='')
+        print("#parameters: ", end="")
         params = list()
         total_size = 0
 
@@ -163,7 +166,8 @@ class MatchLSTM(nn.Module):
                 n_params = multiply_iter(p.size())
                 total_size += n_params
             if debug:
-                print(name, p.requires_grad, p.size(), multiply_iter(p.size()),
-                      sep='\t')
-        print('{:,}'.format(total_size))
+                print(
+                    name, p.requires_grad, p.size(), multiply_iter(p.size()), sep="\t"
+                )
+        print("{:,}".format(total_size))
         return params
