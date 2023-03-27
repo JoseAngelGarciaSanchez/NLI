@@ -1,9 +1,10 @@
 import numpy as np
 from transformers import AutoModelForSequenceClassification, Trainer, TrainingArguments
-from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.metrics import accuracy_score
+import random
 
-class RobertaPredictor(BaseEstimator, TransformerMixin):
+
+class RobertaPredictor:
     """
     Class RobertaPredictor
     A custom estimator and transformer that wraps the RoBERTa model from Hugging Face's Transformers library
@@ -36,9 +37,20 @@ class RobertaPredictor(BaseEstimator, TransformerMixin):
     predicted_labels, accuracy = transformer_trainer.predict(test_set, test_set['label'])
     print(f'The accuracy of the model is {accuracy}')
     """
-    def __init__(self, model:str='cross-encoder/nli-roberta-base', train_batch_size:int=8, eval_batch_size:int=32, epochs:int=1, warmup_steps:int=0.1,
-                 eval_steps:int=500, metric_for_best_model:str='eval_loss', output_dir:str='./results',
-                 load_best_model_at_end:bool=True, random_seed:int=42):
+
+    def __init__(
+        self,
+        model: str = "cross-encoder/nli-roberta-base",
+        train_batch_size: int = 8,
+        eval_batch_size: int = 32,
+        epochs: int = 1,
+        warmup_steps: int = 0.1,
+        eval_steps: int = 500,
+        metric_for_best_model: str = "eval_loss",
+        output_dir: str = "./results",
+        load_best_model_at_end: bool = True,
+        random_seed: int = 42,
+    ):
         self.model = AutoModelForSequenceClassification.from_pretrained(model)
         self.train_batch_size = train_batch_size
         self.eval_batch_size = eval_batch_size
@@ -50,45 +62,51 @@ class RobertaPredictor(BaseEstimator, TransformerMixin):
         self.load_best_model_at_end = load_best_model_at_end
         self.random_seed = random_seed
 
-    def fit(self, X, y):
-        
+    def fit(self, train_data, val_data):
+        # Sample the training data
+        # random.seed(self.random_seed)
+        train_data_sample = (
+            train_data  # .shuffle(seed=self.random_seed).select(range(10000))
+        )
+
         training_args = TrainingArguments(
             output_dir=self.output_dir,
-            evaluation_strategy='steps',
+            evaluation_strategy="steps",
             eval_steps=self.eval_steps,
             load_best_model_at_end=self.load_best_model_at_end,
             per_device_train_batch_size=self.train_batch_size,
             per_device_eval_batch_size=self.eval_batch_size,
             num_train_epochs=self.epochs,
             metric_for_best_model=self.metric_for_best_model,
-            warmup_steps=self.warmup_steps
+            warmup_steps=self.warmup_steps,
         )
 
         self.trainer = Trainer(
             model=self.model,
             args=training_args,
-            train_dataset=X,
-            eval_dataset=y,
-            compute_metrics=lambda pred: {"accuracy": accuracy_score(
-                pred.label_ids, pred.predictions.argmax(axis=1))}
+            train_dataset=train_data_sample,
+            eval_dataset=val_data,
+            compute_metrics=lambda pred: {
+                "accuracy": accuracy_score(
+                    pred.label_ids, pred.predictions.argmax(axis=1)
+                )
+            },
         )
 
-        self.trainer.train()
-        self.trained_model = self.trainer.model
+        self.trained_model = self.trainer.train()
         return self
-    
-    def predict(self, X, y=None):
-        if not hasattr(self, 'trained_model'):
-            raise ValueError("The model has not been trained yet. Please call 'fit' first.")
 
-        # Reuse the existing trainer with the trained model
-        self.trainer.model = self.trained_model
+    def predict(self, X):
+        # On a eu quelques problèmes avec les etiquettes des label, les chiffres ne correspondent plus après avoir
+        predictions_mapping = {0: "contradiction", 1: "entailment", 2: "neutral"}
+        label_mapping = {0: "entailment", 1: "neutral", 2: "contradiction"}
 
         predictions = self.trainer.predict(X)
-        predicted_labels = np.argmax(predictions.predictions, axis=1)
 
-        if y is not None:
-            accuracy = accuracy_score(y, predicted_labels)
-            return predicted_labels, accuracy
-        else:
-            return predicted_labels
+        predicted_labels = np.argmax(predictions.predictions, axis=1)
+        accuracy = accuracy_score(
+            [label_mapping[sample["labels"]] for sample in X],
+            [predictions_mapping[label] for label in predicted_labels],
+        )
+
+        return predicted_labels, accuracy
