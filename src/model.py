@@ -1,13 +1,13 @@
-from sklearn.base import BaseEstimator, TransformerMixin
-from transformers import Trainer, TrainingArguments
-from sklearn.metrics import accuracy_score
 import numpy as np
+from transformers import AutoModelForSequenceClassification, Trainer, TrainingArguments
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.metrics import accuracy_score
 
-class TransformerTrainer(BaseEstimator, TransformerMixin):
-    def __init__(self, model, train_batch_size=8, eval_batch_size=32, epochs=1, warmup_steps=0.1,
-                 eval_steps=500, metric_for_best_model='eval_loss', output_dir='./results',
-                 load_best_model_at_end=True, random_seed=42):
-        self.model = model
+class RobertaPredictor(BaseEstimator, TransformerMixin):
+    def __init__(self, model:str='cross-encoder/nli-roberta-base', train_batch_size:int=8, eval_batch_size:int=32, epochs:int=1, warmup_steps:int=0.1,
+                 eval_steps:int=500, metric_for_best_model:str='eval_loss', output_dir:str='./results',
+                 load_best_model_at_end:bool=True, random_seed:int=42):
+        self.model = AutoModelForSequenceClassification.from_pretrained(model)
         self.train_batch_size = train_batch_size
         self.eval_batch_size = eval_batch_size
         self.epochs = epochs
