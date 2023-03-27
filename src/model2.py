@@ -1,6 +1,10 @@
+import os
+import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from transformers import Trainer, TrainingArguments
 from sklearn.metrics import accuracy_score
+from transformers.callbacks import EarlyStoppingCallback, ModelCheckpoint
+
 
 class TransformerTrainer(BaseEstimator, TransformerMixin):
     def __init__(self, model, train_batch_size=8, eval_batch_size=32, epochs=1, warmup_steps=0.1,
@@ -17,7 +21,7 @@ class TransformerTrainer(BaseEstimator, TransformerMixin):
         self.load_best_model_at_end = load_best_model_at_end
         self.random_seed = random_seed
 
-    def fit(self, X, y):
+    def fit(self, X, y, patience=3):
         
         training_args = TrainingArguments(
             output_dir=self.output_dir,
@@ -31,22 +35,39 @@ class TransformerTrainer(BaseEstimator, TransformerMixin):
             warmup_steps=self.warmup_steps
         )
 
+        def compute_metrics(pred):
+            labels = pred.label_ids
+            preds = pred.predictions.argmax(-1)
+            acc = accuracy_score(labels, preds)
+            f1 = f1_score(labels, preds, average='weighted')
+            return {'accuracy': acc, 'f1_score': f1}
+
+        # Define the callback functions
+        early_stopping = EarlyStoppingCallback(early_stopping_patience=patience)
+        checkpoint = ModelCheckpoint(
+            dirpath=self.output_dir,
+            filename='best-checkpoint',
+            monitor=self.metric_for_best_model,
+            save_top_k=1,
+            mode='min'
+        )
+        
         trainer = Trainer(
             model=self.model,
             args=training_args,
             train_dataset=X,
             eval_dataset=y,
-            compute_metrics=lambda pred: {"accuracy": accuracy_score(
-                pred.label_ids, pred.predictions.argmax(axis=1))}
+            compute_metrics=compute_metrics,
+            callbacks=[early_stopping, checkpoint]
         )
 
         trainer.train()
-        self.trained_model = trainer.model
+        
+        # Load the best model from the checkpoint
+        best_model_dir = os.path.join(self.output_dir, 'best-checkpoint')
+        self.trained_model = self.model.__class__.from_pretrained(best_model_dir)
+        
         return self
-
-    def transform(self, X):
-        # return transformed data
-        return X
     
     def predict(self, X):
         # Create a test dataset
