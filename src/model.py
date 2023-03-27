@@ -4,6 +4,38 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.metrics import accuracy_score
 
 class RobertaPredictor(BaseEstimator, TransformerMixin):
+    """
+    Class RobertaPredictor
+    A custom estimator and transformer that wraps the RoBERTa model from Hugging Face's Transformers library
+    for sequence classification tasks. This class inherits from BaseEstimator and TransformerMixin classes
+    from scikit-learn, enabling it to be used in scikit-learn pipelines.
+
+    Attributes:
+    ----------
+    model (str): The name of the pretrained RoBERTa model to use. Defaults to 'cross-encoder/nli-roberta-base'.
+    train_batch_size (int): The batch size for training. Defaults to 8.
+    eval_batch_size (int): The batch size for evaluation. Defaults to 32.
+    epochs (int): The number of training epochs. Defaults to 1.
+    warmup_steps (float): The ratio of the total training steps to use for warm-up. Defaults to 0.1.
+    eval_steps (int): The number of training steps between evaluations. Defaults to 500.
+    metric_for_best_model (str): The metric to use for early stopping and selecting the best model. Defaults to 'eval_loss'.
+    output_dir (str): The directory to save the model's output. Defaults to './results'.
+    load_best_model_at_end (bool): Whether to load the best model found during training. Defaults to True.
+    random_seed (int): The random seed for reproducibility. Defaults to 42.
+
+    Methods:
+    --------
+    fit(self, X, y): Trains the RoBERTa model using the provided training data.
+    predict(self, X, y=None): Makes predictions using the trained RoBERTa model.
+
+    Example:
+    --------
+    from model import RobertaPredictor
+    transformer_trainer = RobertaPredictor('cross-encoder/nli-roberta-base')
+    transformer_trainer.fit(train_set, validation_set)
+    predicted_labels, accuracy = transformer_trainer.predict(test_set, test_set['label'])
+    print(f'The accuracy of the model is {accuracy}')
+    """
     def __init__(self, model:str='cross-encoder/nli-roberta-base', train_batch_size:int=8, eval_batch_size:int=32, epochs:int=1, warmup_steps:int=0.1,
                  eval_steps:int=500, metric_for_best_model:str='eval_loss', output_dir:str='./results',
                  load_best_model_at_end:bool=True, random_seed:int=42):
