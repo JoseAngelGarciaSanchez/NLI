@@ -15,7 +15,7 @@ class PreProcessor(TransformerMixin, BaseEstimator):
     
     def transform(self, X):
         X_filtered = X.filter(lambda x: x['label'] != -1)
-        encodings = self.tokenizer(X['premise'], X['hypothesis'], padding=self.padding, truncation=self.truncation, max_length=self.max_length)
+        encodings = self.tokenizer(X_filtered['premise'], X_filtered['hypothesis'], padding=self.padding, truncation=self.truncation, max_length=self.max_length)
 
         # Convert inputs and labels to list of dictionaries
         dataset_inputs = {'input_ids': encodings['input_ids'],
