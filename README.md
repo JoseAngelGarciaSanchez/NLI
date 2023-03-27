@@ -1,2 +1,2 @@
 # NLI
-Natural Language Inference
+Natural Language Inference project, please read Natural_language_inference.pdf 
