@@ -1,6 +1,7 @@
 from sklearn.base import BaseEstimator, TransformerMixin
 from transformers import Trainer, TrainingArguments
 from sklearn.metrics import accuracy_score
+import numpy as np
 
 class TransformerTrainer(BaseEstimator, TransformerMixin):
     def __init__(self, model, train_batch_size=8, eval_batch_size=32, epochs=1, warmup_steps=0.1,
