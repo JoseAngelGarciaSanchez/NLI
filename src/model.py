@@ -31,7 +31,7 @@ class TransformerTrainer(BaseEstimator, TransformerMixin):
             warmup_steps=self.warmup_steps
         )
 
-        trainer = Trainer(
+        self.trainer = Trainer(
             model=self.model,
             args=training_args,
             train_dataset=X,
@@ -40,22 +40,22 @@ class TransformerTrainer(BaseEstimator, TransformerMixin):
                 pred.label_ids, pred.predictions.argmax(axis=1))}
         )
 
-        trainer.train()
-        self.trained_model = trainer.model
+        self.trainer.train()
+        self.trained_model = self.trainer.model
         return self
-
-    def transform(self, X):
-        # return transformed data
-        return X
     
-    def predict(self, X):
-        # Create a test dataset
-        test_dataset = self.transform(X)
+    def predict(self, X, y=None):
+        if not hasattr(self, 'trained_model'):
+            raise ValueError("The model has not been trained yet. Please call 'fit' first.")
 
-        # Use the trained model to make predictions on the test dataset
-        predictions = self.trained_model.predict(test_dataset)
+        # Reuse the existing trainer with the trained model
+        self.trainer.model = self.trained_model
 
-        # Convert the model outputs to predicted labels
-        predicted_labels = predictions.predictions.argmax(axis=1)
+        predictions = self.trainer.predict(X)
+        predicted_labels = np.argmax(predictions.predictions, axis=1)
 
-        return predicted_labels
+        if y is not None:
+            accuracy = accuracy_score(y, predicted_labels)
+            return predicted_labels, accuracy
+        else:
+            return predicted_labels
