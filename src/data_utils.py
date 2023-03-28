@@ -65,4 +65,4 @@ class PreProcessor(TransformerMixin, BaseEstimator):
             for input, label in zip(dataset_data, labels)
         ]
 
-        return dataset_data
+        return dataset_data, labels
