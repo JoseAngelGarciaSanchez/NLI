@@ -1,4 +1,5 @@
 # Natural Language Inference on SNLI Dataset
+Many thanks to my team mate [sarrabenyahia](www.github.com/sarrabenyahia) for her invaluable work.
 
 This repository contains our work on Natural Language Inference (NLI) using the Stanford Natural Language Inference (SNLI) Dataset. Our model demonstrates an impressive AUC of 89.3%, which is significantly higher than the hazard level of 33.3%. Although the state of the art currently stands at 93%, our model showcases the potential to bridge the gap and contribute valuable insights to the NLI research community.
 
