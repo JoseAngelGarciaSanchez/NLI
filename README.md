@@ -32,5 +32,5 @@ Our approach to NLI tackles various linguistic challenges and reduces the impact
 
 1. Clone the repository:
 ```
-git clone https://github.com/yourusername/NLI-SNLI-Dataset.git
+git clone https://github.com/Pse1234/NLI.git
 ```
