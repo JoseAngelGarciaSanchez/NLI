@@ -10,7 +10,7 @@ This repository contains our work on Natural Language Inference (NLI) using the 
   - [Requirements](#requirements)
   - [Installation](#installation)
 - [Usage](#usage)
-  - [Training and evaluate](#Training and evaluate)
+  - [Training and Evaluating](#training)
 - [Results](#results)
 - [Contributing](#contributing)
 - [License](#license)
@@ -43,7 +43,7 @@ pip install -r requirements.txt
 
 ## Usage
 
-### Training and evaluate
+### Training and Evaluating
 
 To train the model, use the following command:
 ```
