@@ -1,5 +1,5 @@
 # 🚀 Natural Language Inference on SNLI Dataset 🚀 
-First of all, many thanks to my team mate [sarrabenyahia](https://github.com/sarrabenyahia) for her invaluable work.
+First of all, many thanks to my team mate [Sarra Ben Yahia](https://github.com/sarrabenyahia) for her invaluable work.
 
 This repository contains our work on Natural Language Inference (NLI) using the Stanford Natural Language Inference (SNLI) Dataset. Our model demonstrates an impressive AUC of 89.3%, which is significantly higher than the hazard level of 33.3%. Although the state of the art currently stands at 93%, our model showcases the potential to bridge the gap and contribute valuable insights to the NLI research community.
 
@@ -51,7 +51,7 @@ python model.py
 ```
 ## Results
 
-Our model achieves an AUC of 89.3% on the SNLI Dataset. For a detailed analysis of our methodology, experiments, and results, please refer to our [paper](https://github.com/Pse1234/NLI/blob/main/Natural_Language_Inference.pdf).
+Our model achieves an accuracy of 89.3% on the SNLI Dataset. For a detailed analysis of our methodology, experiments, and results, please refer to our [paper](https://github.com/Pse1234/NLI/blob/main/Natural_Language_Inference.pdf).
 
 ## Contributing
 
