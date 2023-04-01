@@ -27,3 +27,10 @@ Our approach to NLI tackles various linguistic challenges and reduces the impact
 - PyTorch 1.9.0 or higher
 - Transformers 4.9.2 or higher
 - tqdm 4.62.0 or higher
+
+### Installation
+
+1. Clone the repository:
+''
+git clone https://github.com/yourusername/NLI-SNLI-Dataset.git
+''
