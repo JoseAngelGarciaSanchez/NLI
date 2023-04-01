@@ -51,7 +51,7 @@ python model.py
 ```
 ## Results
 
-Our model achieves an AUC of 89.3% on the SNLI Dataset. For a detailed analysis of our methodology, experiments, and results, please refer to our [paper](link-to-paper).
+Our model achieves an AUC of 89.3% on the SNLI Dataset. For a detailed analysis of our methodology, experiments, and results, please refer to our [paper](https://github.com/Pse1234/NLI/blob/main/Natural_Language_Inference.pdf).
 
 ## Contributing
 
