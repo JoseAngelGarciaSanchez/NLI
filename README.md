@@ -34,3 +34,30 @@ Our approach to NLI tackles various linguistic challenges and reduces the impact
 ```
 git clone https://github.com/Pse1234/NLI.git
 ```
+
+2. Install the required packages:
+
+```
+pip install -r requirements.txt
+```
+
+## Usage
+
+### Training and evaluate
+
+To train the model, use the following command:
+```
+python model.py
+```
+## Results
+
+Our model achieves an AUC of 89.3% on the SNLI Dataset. For a detailed analysis of our methodology, experiments, and results, please refer to our [paper](link-to-paper).
+
+## Contributing
+
+We welcome contributions from the research community to help improve our NLI model. Please feel free to open issues, submit pull requests, or reach out to us directly.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
